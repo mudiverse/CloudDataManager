@@ -33,6 +33,31 @@ public class DataController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<DataEntry> getById(@RequestHeader("X-API-KEY") String apiKey,
+                                             @RequestParam String collectionName,
+                                             @PathVariable String id) {
+        return dataService.getById(apiKey, collectionName, id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<DataEntry> update(@RequestHeader("X-API-KEY") String apiKey,
+                                            @RequestBody InsertRequest request,
+                                            @PathVariable String id) {
+        DataEntry updated = dataService.updateData(apiKey, request.collectionName(), id, request.data());
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> delete(@RequestHeader("X-API-KEY") String apiKey,
+                                       @RequestParam String collectionName,
+                                       @PathVariable String id) {
+        dataService.deleteData(apiKey, collectionName, id);
+        return ResponseEntity.noContent().build();
+    }
+
     public record InsertRequest(@NotBlank String collectionName, Map<String, Object> data) {}
 }
 

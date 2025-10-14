@@ -63,6 +63,55 @@ public class DataService {
         return mongoTemplate.find(query, DataEntry.class, resolved);
     }
 
+    public Optional<DataEntry> getById(String apiKey, String collectionName, String id) {
+        validateApiKey(apiKey);
+        String resolved = resolveCollectionName(apiKey, collectionName);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id).and("userApiKey").is(apiKey));
+        DataEntry found = mongoTemplate.findOne(query, DataEntry.class, resolved);
+        return Optional.ofNullable(found);
+    }
+
+    public DataEntry updateData(String apiKey, String collectionName, String id, Map<String, Object> data) {
+        validateApiKey(apiKey);
+        Optional<Schema> schemaOptional = schemaService.getSchema(apiKey, collectionName);
+        if (schemaOptional.isEmpty()) {
+            throw new IllegalArgumentException("Schema not found for collection: " + collectionName);
+        }
+
+        Optional<DataEntry> existingOpt = getById(apiKey, collectionName, id);
+        if (existingOpt.isEmpty()) {
+            throw new IllegalArgumentException("Data entry not found: " + id);
+        }
+
+        Map<String, String> schemaDef = schemaOptional.get().getSchemaDefinition();
+        if (schemaDef != null && !schemaDef.isEmpty()) {
+            for (Map.Entry<String, String> field : schemaDef.entrySet()) {
+                String fieldName = field.getKey();
+                String expectedType = field.getValue();
+                if (data.containsKey(fieldName)) {
+                    Object value = data.get(fieldName);
+                    if (!isTypeMatch(value, expectedType)) {
+                        throw new IllegalArgumentException("Field '" + fieldName + "' expected type " + expectedType);
+                    }
+                }
+            }
+        }
+
+        DataEntry toUpdate = existingOpt.get();
+        toUpdate.setData(data);
+        String resolved = resolveCollectionName(apiKey, collectionName);
+        return mongoTemplate.save(toUpdate, resolved);
+    }
+
+    public void deleteData(String apiKey, String collectionName, String id) {
+        validateApiKey(apiKey);
+        String resolved = resolveCollectionName(apiKey, collectionName);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id).and("userApiKey").is(apiKey));
+        mongoTemplate.remove(query, DataEntry.class, resolved);
+    }
+
     private String resolveCollectionName(String apiKey, String collectionName) {
         return apiKey + "__" + collectionName;
     }
