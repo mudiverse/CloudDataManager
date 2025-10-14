@@ -1,0 +1,16 @@
+[Unit]
+Description=CloudDBService Spring Boot Application
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/clouddb
+ExecStart=/usr/bin/java -jar /home/ec2-user/clouddb/target/CloudDBService-0.0.1-SNAPSHOT.jar
+Restart=always
+RestartSec=10
+Environment=MONGODB_URI=mongodb://localhost:27017/clouddb
+Environment=MONGODB_DATABASE=clouddb
+
+[Install]
+WantedBy=multi-user.target
