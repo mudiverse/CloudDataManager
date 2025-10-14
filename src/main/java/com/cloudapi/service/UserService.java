@@ -36,6 +36,20 @@ public class UserService {
         return userRepository.findByApiKey(apiKey);
     }
 
+    public User loginOrRegister(String email, String fallbackName) {
+        return userRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    String name = (fallbackName != null && !fallbackName.isBlank()) ? fallbackName : "User";
+                    String apiKey = generateApiKey();
+                    User user = User.builder()
+                            .name(name)
+                            .email(email)
+                            .apiKey(apiKey)
+                            .build();
+                    return userRepository.save(user);
+                });
+    }
+
     private String generateApiKey() {
         byte[] bytes = new byte[32];
         secureRandom.nextBytes(bytes);

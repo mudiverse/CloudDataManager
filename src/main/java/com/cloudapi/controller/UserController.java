@@ -33,6 +33,18 @@ public class UserController {
     }
 
     public record RegisterRequest(@NotBlank String name, @Email String email) {}
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        User user = userService.loginOrRegister(request.email(), request.name());
+        return ResponseEntity.ok(Map.of(
+                "name", user.getName(),
+                "email", user.getEmail(),
+                "apiKey", user.getApiKey()
+        ));
+    }
+
+    public record LoginRequest(@Email String email, String name) {}
 }
 
 
