@@ -4,6 +4,7 @@ import com.cloudapi.model.Schema;
 import com.cloudapi.repository.SchemaRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,6 +35,11 @@ public class SchemaService {
     public Optional<Schema> getSchema(String apiKey, String collectionName) {
         validateApiKey(apiKey);
         return schemaRepository.findByUserApiKeyAndCollectionName(apiKey, collectionName);
+    }
+
+    public List<Schema> listSchemas(String apiKey) {
+        validateApiKey(apiKey);
+        return schemaRepository.findByUserApiKey(apiKey);
     }
 
     private void validateApiKey(String apiKey) {
