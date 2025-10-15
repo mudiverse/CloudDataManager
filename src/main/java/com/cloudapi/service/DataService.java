@@ -112,6 +112,14 @@ public class DataService {
         mongoTemplate.remove(query, DataEntry.class, resolved);
     }
 
+    public long countDocuments(String apiKey, String collectionName) {
+        validateApiKey(apiKey);
+        String resolved = resolveCollectionName(apiKey, collectionName);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userApiKey").is(apiKey));
+        return mongoTemplate.count(query, DataEntry.class, resolved);
+    }
+
     private String resolveCollectionName(String apiKey, String collectionName) {
         return apiKey + "__" + collectionName;
     }

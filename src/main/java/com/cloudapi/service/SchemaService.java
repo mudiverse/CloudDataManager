@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.Instant;
 
 @Service
 public class SchemaService {
@@ -18,7 +19,8 @@ public class SchemaService {
         this.userService = userService;
     }
 
-    public Schema createSchema(String apiKey, String collectionName, Map<String, String> schemaDefinition) {
+    public Schema createSchema(String apiKey, String collectionName, Map<String, String> schemaDefinition,
+                               String displayName, String description) {
         validateApiKey(apiKey);
         Optional<Schema> existing = schemaRepository.findByUserApiKeyAndCollectionName(apiKey, collectionName);
         if (existing.isPresent()) {
@@ -27,6 +29,9 @@ public class SchemaService {
         Schema schema = Schema.builder()
                 .userApiKey(apiKey)
                 .collectionName(collectionName)
+                .displayName(displayName != null && !displayName.isBlank() ? displayName : collectionName)
+                .description(description)
+                .createdAt(Instant.now())
                 .schemaDefinition(schemaDefinition)
                 .build();
         return schemaRepository.save(schema);

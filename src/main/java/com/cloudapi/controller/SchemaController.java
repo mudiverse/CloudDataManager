@@ -22,7 +22,13 @@ public class SchemaController {
     @PostMapping("/create")
     public ResponseEntity<Schema> create(@RequestHeader("X-API-KEY") String apiKey,
                                          @RequestBody CreateSchemaRequest request) {
-        Schema schema = schemaService.createSchema(apiKey, request.collectionName(), request.schemaDefinition());
+        Schema schema = schemaService.createSchema(
+                apiKey,
+                request.collectionName(),
+                request.schemaDefinition(),
+                request.displayName(),
+                request.description()
+        );
         return ResponseEntity.ok(schema);
     }
 
@@ -39,7 +45,10 @@ public class SchemaController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    public record CreateSchemaRequest(@NotBlank String collectionName, Map<String, String> schemaDefinition) {}
+    public record CreateSchemaRequest(@NotBlank String collectionName,
+                                      Map<String, String> schemaDefinition,
+                                      String displayName,
+                                      String description) {}
 }
 
 
